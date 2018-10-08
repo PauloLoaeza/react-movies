@@ -38,9 +38,9 @@ class MovieForm extends Form {
 
   componentDidMount() {
     const genres = [
-      { _id: 1, name: 'Action' },
-      { _id: 2, name: 'Thriller' },
-      { _id: 3, name: 'Comedy' }
+      { _id: '1', name: 'Action' },
+      { _id: '2', name: 'Thriller' },
+      { _id: '3', name: 'Comedy' }
     ]; //TODO: getGenres
     this.setState({ genres });
 
@@ -48,9 +48,9 @@ class MovieForm extends Form {
     if (movieId === 'new') return;
 
     const movie = {
-      _id: 1,
+      _id: 'a',
       title: 'title1',
-      genre: { _id: 1, name: 'Action' },
+      genre: { _id: '1', name: 'Action' },
       numberInStock: 1,
       dailyRentalRate: 3.5,
       liked: true
@@ -62,7 +62,9 @@ class MovieForm extends Form {
 
   mapToViewModel = movie => {
     return {
-      ...movie,
+      title: movie.title,
+      numberInStock: movie.numberInStock,
+      dailyRentalRate: movie.dailyRentalRate,
       genreId: movie.genre._id
     };
   };
