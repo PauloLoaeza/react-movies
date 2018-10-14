@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import Pagination from './common/pagination';
 import ListGroup from './common/listGroup';
 import SearchBox from './common/searchBox';
 import MoviesTable from './moviesTable';
-// import { getMovies } from "../services/movieService";
-// import { getGenres } from "../services/genreService";
+import { getMovies, deleteMovie } from '../services/movieService';
+import { getGenres } from '../services/genreService';
 import { paginate } from '../utils/paginate';
 import _ from 'lodash';
 
@@ -20,94 +21,31 @@ class Movies extends Component {
     sortColumn: { path: 'title', order: 'asc' }
   };
 
-  componentDidMount() {
-    const genres = [
-      { _id: '', name: 'All genres' },
-      { _id: 1, name: 'Action' },
-      { _id: 2, name: 'Thriller' },
-      { _id: 3, name: 'Comedy' }
-    ];
+  async componentDidMount() {
+    const { data } = await getGenres();
+    const genres = [{ _id: '', name: 'All genres' }, ...data];
+
+    const { data: movies } = await getMovies();
+
     this.setState({
-      movies: [
-        {
-          _id: 1,
-          title: 'title1',
-          genre: { _id: 1, name: 'Action' },
-          numberInStock: 1,
-          dailyRentalRate: 3.5,
-          liked: true
-        },
-        {
-          _id: 2,
-          title: 'title2',
-          genre: { _id: 2, name: 'Thriller' },
-          numberInStock: 2,
-          dailyRentalRate: 6.5
-        },
-        {
-          _id: 3,
-          title: 'title3',
-          genre: { _id: 1, name: 'Action' },
-          numberInStock: 3,
-          dailyRentalRate: 6.5
-        },
-        {
-          _id: 4,
-          title: 'title4',
-          genre: { _id: 2, name: 'Thriller' },
-          numberInStock: 4,
-          dailyRentalRate: 9.5
-        },
-        {
-          _id: 5,
-          title: 'title5',
-          genre: { _id: 1, name: 'Action' },
-          numberInStock: 5,
-          dailyRentalRate: 9.5
-        },
-        {
-          _id: 6,
-          title: 'title6',
-          genre: { _id: 2, name: 'Thriller' },
-          numberInStock: 6,
-          dailyRentalRate: 9.5
-        },
-        {
-          _id: 7,
-          title: 'title7',
-          genre: { _id: 3, name: 'Comedy' },
-          numberInStock: 7,
-          dailyRentalRate: 9.5
-        },
-        {
-          _id: 8,
-          title: 'title8',
-          genre: { _id: 4, name: 'Unknown' },
-          numberInStock: 8,
-          dailyRentalRate: 9.5
-        },
-        {
-          _id: 9,
-          title: 'title9',
-          genre: { _id: 3, name: 'Comedy' },
-          numberInStock: 9,
-          dailyRentalRate: 9.5
-        },
-        {
-          _id: 10,
-          title: 'title10',
-          genre: { _id: 4, name: 'Unknown' },
-          numberInStock: 10,
-          dailyRentalRate: 9.5
-        }
-      ],
+      movies,
       genres
     });
   }
 
-  handleDelete = movie => {
-    const movies = this.state.movies.filter(m => m._id !== movie._id);
+  handleDelete = async movie => {
+    const originalMovies = this.state.movies;
+    const movies = originalMovies.filter(m => m._id !== movie._id);
     this.setState({ movies });
+
+    try {
+      await deleteMovie(movie._id);
+    } catch (ex) {
+      if (ex.response && ex.response.status === 404)
+        toast.error('movie already deleted');
+
+      this.setState({ movies: originalMovies });
+    }
   };
 
   handleLike = movie => {
